@@ -4,7 +4,7 @@ from itertools import accumulate
 import sys
 
 # 螞蟻的參數
-MAX_ITER = 400
+MAX_ITER = 200
 EVAPORATE_RATE_1 = 0.9
 EVAPORATE_RATE_2 = 0.6
 EVAPORATE_RATE_3 = 0.3
