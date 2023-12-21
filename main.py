@@ -14,7 +14,7 @@ EVAPORATE_RATE_2 = 0.5
 EVAPORATE_RATE_3 = 0.5
 Q = 100
 ALPHA = 2
-BETA = 2
+BETA = 4
 NUMBER_OF_ANT = 200
 
 # 相鄰的網格方向
@@ -24,7 +24,7 @@ weighted_dict = {1:1,2:3,3:5}
 # 定義地圖大小和網格大小
 map_width = 1000
 map_height = 1000
-grid_size = 20
+grid_size = 25
 
 num_rows = map_height // grid_size
 num_cols = map_width // grid_size
@@ -90,15 +90,15 @@ for i in range(num_rows):
                 distance_data[i, j, k] = (weighted_dict[current_type] + weighted_dict[neighbor_type])
 
 
-def update_pheromone():
+def update_pheromone(delta_pheromone):
     for i in range(num_rows):
         for j in range(num_cols):
             if(label_map_data[i, j] == 1):
-                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_1
+                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_1 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_1)
             elif(label_map_data[i, j] == 2):
-                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_2
+                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_2 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_2)
             elif(label_map_data[i, j] == 3):
-                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_3
+                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_3 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_3)
 
 # print(label_map_data)
 class Ant():
@@ -176,15 +176,15 @@ class Ant():
             death_flag = self.select()
         return death_flag
     
-    def release_pheromone(self):
+    def release_pheromone(self,delta_pheromone):
         # print(self.path)     
         for city in self.path:
             if(label_map_data[city[0]][city[1]] == 1):
-                pheromone_data[city[0]][city[1]] += (Q / self.totol_distance * (1 - EVAPORATE_RATE_1))
+                delta_pheromone[city[0]][city[1]] += (Q / self.totol_distance * (1 - EVAPORATE_RATE_1))
             elif(label_map_data[city[0]][city[1]] == 2):
-                pheromone_data[num_rows-1][num_cols-1] += (Q / self.totol_distance * (1 - EVAPORATE_RATE_2))
+                delta_pheromone[num_rows-1][num_cols-1] += (Q / self.totol_distance * (1 - EVAPORATE_RATE_2))
             elif(label_map_data[city[0]][city[1]] == 3):
-                pheromone_data[num_rows-1][num_cols-1] += (Q / self.totol_distance * (1 - EVAPORATE_RATE_3))
+                delta_pheromone[num_rows-1][num_cols-1] += (Q / self.totol_distance * (1 - EVAPORATE_RATE_3))
 
 best_value = sys.maxsize
 best_solution = []
@@ -204,15 +204,16 @@ while running:
 
     # 更新遊戲
     #for i in range(MAX_ITER):
+        delta_pheromone = np.zeros((num_cols, num_rows))
         for j in range(NUMBER_OF_ANT):
             ant = Ant()
             Update_bool = ant.run_path()
             if(not Update_bool):
-                ant.release_pheromone()
+                ant.release_pheromone(delta_pheromone)
             if ant.totol_distance < best_value and not(Update_bool):
                 best_value = ant.totol_distance
                 best_solution = ant.path
-        update_pheromone()
+        update_pheromone(delta_pheromone)
 
     print(f"Best value: {best_value}")
     #print(best_solution)
