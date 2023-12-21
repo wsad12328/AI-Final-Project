@@ -4,17 +4,17 @@ import perlin_noise
 import numpy as np
 from itertools import accumulate
 import sys
+import copy
 
-
-FPS = 2
+FPS = 10
 # 螞蟻的參數
 MAX_ITER = 2
-EVAPORATE_RATE_1 = 0.5
-EVAPORATE_RATE_2 = 0.5
-EVAPORATE_RATE_3 = 0.5
+EVAPORATE_RATE_1 = 0.3
+EVAPORATE_RATE_2 = 0.6
+EVAPORATE_RATE_3 = 0.9
 Q = 100
-ALPHA = 2
-BETA = 4
+ALPHA = 4 # mode 1(4, 2) # mode 2(3, 3) # mode 2(2, 4) alpha + beta = 6
+BETA = 2  # (1, 5) (2, 4) (3, 3) (4, 2) (5, 1)
 NUMBER_OF_ANT = 200
 
 # 相鄰的網格方向
@@ -39,7 +39,7 @@ soil_ant_image = pygame.image.load("soilants.png")
 sand_ant_image = pygame.image.load("sandants.png")
 
 #螞蟻與費洛蒙切換
-show_ant = True
+show_ant = False
 # 初始化 Pygame
 pygame.init()
 
@@ -49,8 +49,9 @@ pygame.display.set_caption("ACO Map")
 clock = pygame.time.Clock()
 
 # 隨機生成地圖，正規化地圖數據
-random_seed = np.random.randint(1000)  # 使用不同的隨機種子
-noise = perlin_noise.PerlinNoise(octaves=5, seed=100)
+random_seed = np.random.randint(1000) # 使用不同的隨機種子
+random.seed(1000) # 使用不同的隨機種子
+noise = perlin_noise.PerlinNoise(octaves=5, seed=100) # 地圖的random seed先不要動
 map_data = np.zeros((num_cols, num_rows))
 label_map_data =  np.zeros((num_cols, num_rows))
 
@@ -69,10 +70,6 @@ for i in range(num_cols):
             label_map_data[i, j] = 2  # 泥土顏色
         else:
             label_map_data[i, j] = 3  # 沙子顏色
-
-def map_value(value, in_min, in_max, out_min, out_max):
-    #映射
-    return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
 #蟻群
 pheromone_data = np.ones((num_rows, num_cols))
@@ -214,11 +211,17 @@ while running:
                 best_value = ant.totol_distance
                 best_solution = ant.path
         update_pheromone(delta_pheromone)
-
+        
     print(f"Best value: {best_value}")
     #print(best_solution)
     # 畫面顯示
-            
+    # print(pheromone_data)
+    log_pheromone_data = np.log(pheromone_data)
+    min_pheromone = np.min(log_pheromone_data)
+    max_pheromone = np.max(log_pheromone_data)
+    # print(type(min_pheromone))
+    normalize_pheromone_data = (log_pheromone_data - min_pheromone) / (max_pheromone - min_pheromone)
+    # print(normalize_pheromone_data)
     # 繪製地圖
     for i in range(num_cols):
         for j in range(num_rows):
@@ -242,14 +245,15 @@ while running:
                     screen.blit(sand_image, (j * grid_size, i * grid_size))
             
             if show_ant == False:
-                if pheromone_data[i, j] > 0.005 :
-                    color = (255, 255, 255)
-                    pygame.draw.rect(screen, color, (j * grid_size, i * grid_size, grid_size, grid_size))
-
-                    #if pheromone_data[i, j] > 0.005:
-                        #circle_size = int(map_value(pheromone_data[i, j], 0.005, 10, 0, 20))
-                        #print(circle_size)
-                        #pygame.draw.circle(screen, (255, 255, 255),  (i * grid_size + grid_size/2, j * grid_size + grid_size/2) ,  circle_size/2)
+                if normalize_pheromone_data[i, j] > 1e-1 :
+                    transparency = 5
+                    color = pygame.Color = (255, 0, 0, transparency)
+                    # pygame.draw.rect(screen, color, (j * grid_size, i * grid_size, grid_size, grid_size))
+                    # if pheromone_data[i, j] > 0.005:
+                    # circle_size = int(map_value(pheromone_data[i, j], 0.005, 10, 0, 20))
+                    circle_size = (grid_size / 2) * normalize_pheromone_data[i, j]  
+                    # print(circle_size)
+                    pygame.draw.circle(screen, color,  (j * grid_size + grid_size/2, i * grid_size + grid_size/2) ,  circle_size)
         # 更新顯示
     pygame.display.update()
 
