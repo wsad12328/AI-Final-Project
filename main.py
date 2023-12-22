@@ -8,18 +8,20 @@ import copy
 
 FPS = 10
 # 螞蟻的參數
-MAX_ITER = 2
-EVAPORATE_RATE_1 = 0.3
-EVAPORATE_RATE_2 = 0.6
-EVAPORATE_RATE_3 = 0.9
+MAX_ITER = 5
 Q = 100
-ALPHA = 4 # mode 1(4, 2) # mode 2(3, 3) # mode 2(2, 4) alpha + beta = 6
-BETA = 2  # (1, 5) (2, 4) (3, 3) (4, 2) (5, 1)
+weighted_dict = {1:1,2:3,3:5}
+EVAPORATE_RATE_1 = 1 / weighted_dict[1]
+EVAPORATE_RATE_2 = 1 / weighted_dict[2]
+EVAPORATE_RATE_3 = 1 / weighted_dict[3]
+
+ALPHA = 5 # mode 1(4, 2) # mode 2(3, 3) # mode 2(2, 4) alpha + beta = 6
+BETA = 1 # (1, 5) (2, 4) (3, 3) (4, 2) (5, 1)
 NUMBER_OF_ANT = 200
 
 # 相鄰的網格方向
 direction = [(1, 0), (0, 1), (1, 1), (-1, 0), (0, -1), (-1, -1), (-1, 1), (1, -1)]
-weighted_dict = {1:1,2:3,3:5}
+
 
 # 定義地圖大小和網格大小
 map_width = 1000
@@ -74,6 +76,7 @@ for i in range(num_cols):
 #蟻群
 pheromone_data = np.ones((num_rows, num_cols))
 distance_data = np.full((num_rows, num_cols, 8), -1, dtype=float)
+
 for i in range(num_rows):
     for j in range(num_cols):
         current_x = i
@@ -87,15 +90,21 @@ for i in range(num_rows):
                 distance_data[i, j, k] = (weighted_dict[current_type] + weighted_dict[neighbor_type])
 
 
-def update_pheromone(delta_pheromone):
+def update_pheromone(pheromone_data, delta_pheromone):
     for i in range(num_rows):
         for j in range(num_cols):
             if(label_map_data[i, j] == 1):
                 pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_1 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_1)
+                if(pheromone_data[i, j] < 1e-5):
+                    pheromone_data[i, j] = EVAPORATE_RATE_1
             elif(label_map_data[i, j] == 2):
                 pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_2 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_2)
+                if(pheromone_data[i, j] < 1e-5):
+                    pheromone_data[i, j] = EVAPORATE_RATE_2
             elif(label_map_data[i, j] == 3):
                 pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_3 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_3)
+                if(pheromone_data[i, j] < 1e-5):
+                    pheromone_data[i, j] = EVAPORATE_RATE_3
 
 # print(label_map_data)
 class Ant():
@@ -210,8 +219,8 @@ while running:
             if ant.totol_distance < best_value and not(Update_bool):
                 best_value = ant.totol_distance
                 best_solution = ant.path
-        update_pheromone(delta_pheromone)
-        
+        update_pheromone(pheromone_data,delta_pheromone)
+    # print(pheromone_data)   
     print(f"Best value: {best_value}")
     #print(best_solution)
     # 畫面顯示
