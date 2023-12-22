@@ -46,7 +46,9 @@ grass_ant_image = pygame.image.load("grassants.png")
 soil_ant_image = pygame.image.load("soilants.png")
 sand_ant_image = pygame.image.load("sandants.png")
 
-background_image = pygame.image.load("background.jpg")  # 替換成你的圖片檔案路徑
+background_image = pygame.image.load("background.jpg") 
+home_image = pygame.image.load("home.jpg") 
+food_image = pygame.image.load("cake.jpg") 
 
 # 螞蟻與費洛蒙切換
 show_ant = False
@@ -469,13 +471,18 @@ def initialize():
     screen.blit(background_image, (0, 0))
     for i in range(num_cols):
         for j in range(num_rows):
-            value = map_data[i, j]
-            if value < 0.4:
-                screen.blit(grass_image, (j * grid_size, i * grid_size))
-            elif value < 0.7:
-                screen.blit(soil_image, (j * grid_size, i * grid_size))
+            if i == 0 and j == 0:
+                screen.blit(home_image, (j * grid_size, i * grid_size))
+            elif i == num_cols-1 and j == num_rows-1:
+                screen.blit(food_image, (j * grid_size, i * grid_size))
             else:
-                screen.blit(sand_image, (j * grid_size, i * grid_size))
+                value = map_data[i, j]
+                if value < 0.4:
+                    screen.blit(grass_image, (j * grid_size, i * grid_size))
+                elif value < 0.7:
+                    screen.blit(soil_image, (j * grid_size, i * grid_size))
+                else:
+                    screen.blit(sand_image, (j * grid_size, i * grid_size))
     draw_toolbar()
     draw_variable()
     draw_generation_count()
@@ -571,22 +578,32 @@ while running:
                 for j in range(num_rows):
                     value = map_data[i, j]
                     if (i, j) in best_solution:
-                        if value < 0.4:
-                            screen.blit(grass_ant_image, (j * grid_size, i * grid_size))
-                        elif value < 0.7:
-                            screen.blit(soil_ant_image, (j * grid_size, i * grid_size))
+                        if i == 0 and j == 0:
+                            screen.blit(home_image, (j * grid_size, i * grid_size))
+                        elif i == num_cols-1 and j == num_rows-1:
+                            screen.blit(food_image, (j * grid_size, i * grid_size))
                         else:
-                            screen.blit(sand_ant_image, (j * grid_size, i * grid_size))
+                            if value < 0.4:
+                                screen.blit(grass_ant_image, (j * grid_size, i * grid_size))
+                            elif value < 0.7:
+                                screen.blit(soil_ant_image, (j * grid_size, i * grid_size))
+                            else:
+                                screen.blit(sand_ant_image, (j * grid_size, i * grid_size))
                         # color = (0, 0, 0)
                         # pygame.draw.rect(screen, color, (j * grid_size, i * grid_size, grid_size, grid_size))
 
                     else:
-                        if value < 0.4:
-                            screen.blit(grass_image, (j * grid_size, i * grid_size))
-                        elif value < 0.7:
-                            screen.blit(soil_image, (j * grid_size, i * grid_size))
+                        if i == 0 and j == 0:
+                            screen.blit(home_image, (j * grid_size, i * grid_size))
+                        elif i == num_cols-1 and j == num_rows-1:
+                            screen.blit(food_image, (j * grid_size, i * grid_size))
                         else:
-                            screen.blit(sand_image, (j * grid_size, i * grid_size))
+                            if value < 0.4:
+                                screen.blit(grass_image, (j * grid_size, i * grid_size))
+                            elif value < 0.7:
+                                screen.blit(soil_image, (j * grid_size, i * grid_size))
+                            else:
+                                screen.blit(sand_image, (j * grid_size, i * grid_size))
 
                     if show_ant == False:
                         if normalize_pheromone_data[i, j] > 1e-1:
