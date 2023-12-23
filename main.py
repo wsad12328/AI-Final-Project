@@ -14,7 +14,7 @@ FPS_STOP = 60
 generation = 0
 game_started = True # 這個是方便跑實驗用的
 # game_started = False 
-stop_generation = 500
+stop_generation = 750
 
 # 螞蟻的參數
 # MAX_ITER = 5
