@@ -75,7 +75,7 @@ clock = pygame.time.Clock()
 
 random_seed = np.random.randint(seed)  # 使用不同的隨機種子
 random.seed(seed)  # 使用不同的隨機種子
-noise = perlin_noise.PerlinNoise(octaves=5, seed=100)  # 地圖的random seed先不要動
+noise = perlin_noise.PerlinNoise(octaves=8, seed=100)  # 地圖的random seed先不要動
 map_data = np.zeros((num_cols, num_rows))
 label_map_data = np.zeros((num_cols, num_rows))
 
