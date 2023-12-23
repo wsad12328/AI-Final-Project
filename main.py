@@ -14,7 +14,8 @@ FPS_STOP = 60
 generation = 0
 game_started = True # 這個是方便跑實驗用的
 # game_started = False 
-stop_generation = 1000
+stop_generation = 500
+
 # 螞蟻的參數
 # MAX_ITER = 5
 Q = 100
@@ -27,6 +28,7 @@ EVAPORATE_RATE_3 = float(sys.argv[3])
 ALPHA = int(sys.argv[4])  # mode 1(4, 2) # mode 2(3, 3) # mode 2(2, 4) alpha + beta = 6
 BETA = int(sys.argv[5])  # (1, 5) (2, 4) (3, 3) (4, 2) (5, 1)
 seed = int(sys.argv[6])
+# print(f"seed: {seed}")
 # print(seed)
 NUMBER_OF_ANT = 200
 
@@ -121,19 +123,17 @@ def update_pheromone(pheromone_data, delta_pheromone):
     for i in range(num_rows):
         for j in range(num_cols):
             if label_map_data[i, j] == 1:
-                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_1 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_1)
-                # if pheromone_data[i, j] < 1e-5:
-                #     pheromone_data[i, j] = EVAPORATE_RATE_1
+                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_1 + delta_pheromone[i, j]
+                if pheromone_data[i, j] < 1e-5:
+                    pheromone_data[i, j] =  1 / weighted_dict[1]
             elif label_map_data[i, j] == 2:
-                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_2 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_2)
-                # if pheromone_data[i, j] < 1e-5:
-                #     pheromone_data[i, j] = EVAPORATE_RATE_2
+                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_2 + delta_pheromone[i, j]
+                if pheromone_data[i, j] < 1e-5:
+                    pheromone_data[i, j] = 1 / weighted_dict[2]
             elif label_map_data[i, j] == 3:
-                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_3 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_3)
-                # if pheromone_data[i, j] < 1e-5:
-                #     pheromone_data[i, j] = EVAPORATE_RATE_3
-            if(pheromone_data[i, j] < 1e-5):
-                pheromone_data[i, j] = 1
+                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_3 + delta_pheromone[i, j]
+                if pheromone_data[i, j] < 1e-5:
+                    pheromone_data[i, j] = 1 / weighted_dict[3]
 
 
 # print(label_map_data)
@@ -240,18 +240,19 @@ class Ant:
     def release_pheromone(self, delta_pheromone):
         # print(self.path)
         for city in self.path:
-            if label_map_data[city[0]][city[1]] == 1:
-                delta_pheromone[city[0]][city[1]] += (
-                    Q / self.totol_distance 
-                )
-            elif label_map_data[city[0]][city[1]] == 2:
-                delta_pheromone[num_rows - 1][num_cols - 1] += (
-                    Q / self.totol_distance 
-                )
-            elif label_map_data[city[0]][city[1]] == 3:
-                delta_pheromone[num_rows - 1][num_cols - 1] += (
-                    Q / self.totol_distance
-                )
+            delta_pheromone[city[0]][city[1]] += (Q / self.totol_distance )
+            # if label_map_data[city[0]][city[1]] == 1:
+            #     delta_pheromone[city[0]][city[1]] += (
+            #         Q / self.totol_distance 
+            #     )
+            # elif label_map_data[city[0]][city[1]] == 2:
+            #     delta_pheromone[num_rows - 1][num_cols - 1] += (
+            #         Q / self.totol_distance 
+            #     )
+            # elif label_map_data[city[0]][city[1]] == 3:
+            #     delta_pheromone[num_rows - 1][num_cols - 1] += (
+            #         Q / self.totol_distance
+            #     )
 
 
 best_value = sys.maxsize
