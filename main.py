@@ -1,28 +1,33 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import random
 import perlin_noise
 import numpy as np
 from itertools import accumulate
 import sys
-import copy
 
 
-FPS_RUN = 2
+FPS_RUN = 10
 FPS_STOP = 60
 
 generation = 0
-game_started = False
-stop_generation = 30
+game_started = True # 這個是方便跑實驗用的
+# game_started = False 
+stop_generation = 1000
 # 螞蟻的參數
-MAX_ITER = 5
+# MAX_ITER = 5
 Q = 100
 weighted_dict = {1: 1, 2: 3, 3: 5}
-EVAPORATE_RATE_1 = 1 / weighted_dict[1]
-EVAPORATE_RATE_2 = 1 / weighted_dict[2]
-EVAPORATE_RATE_3 = 1 / weighted_dict[3]
+# 1號 草地 2號 泥土 3號 沙子
+EVAPORATE_RATE_1 = float(sys.argv[1])
+EVAPORATE_RATE_2 = float(sys.argv[2])
+EVAPORATE_RATE_3 = float(sys.argv[3])
 
-ALPHA = 5  # mode 1(4, 2) # mode 2(3, 3) # mode 2(2, 4) alpha + beta = 6
-BETA = 1  # (1, 5) (2, 4) (3, 3) (4, 2) (5, 1)
+ALPHA = int(sys.argv[4])  # mode 1(4, 2) # mode 2(3, 3) # mode 2(2, 4) alpha + beta = 6
+BETA = int(sys.argv[5])  # (1, 5) (2, 4) (3, 3) (4, 2) (5, 1)
+seed = int(sys.argv[6])
+# print(seed)
 NUMBER_OF_ANT = 200
 
 # 相鄰的網格方向
@@ -65,8 +70,9 @@ pygame.display.set_caption("ACO Map")
 clock = pygame.time.Clock()
 
 # 隨機生成地圖，正規化地圖數據
-random_seed = np.random.randint(1000)  # 使用不同的隨機種子
-random.seed(1000)  # 使用不同的隨機種子
+
+random_seed = np.random.randint(seed)  # 使用不同的隨機種子
+random.seed(seed)  # 使用不同的隨機種子
 noise = perlin_noise.PerlinNoise(octaves=5, seed=100)  # 地圖的random seed先不要動
 map_data = np.zeros((num_cols, num_rows))
 label_map_data = np.zeros((num_cols, num_rows))
@@ -115,23 +121,19 @@ def update_pheromone(pheromone_data, delta_pheromone):
     for i in range(num_rows):
         for j in range(num_cols):
             if label_map_data[i, j] == 1:
-                pheromone_data[i, j] = pheromone_data[
-                    i, j
-                ] * EVAPORATE_RATE_1 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_1)
-                if pheromone_data[i, j] < 1e-5:
-                    pheromone_data[i, j] = EVAPORATE_RATE_1
+                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_1 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_1)
+                # if pheromone_data[i, j] < 1e-5:
+                #     pheromone_data[i, j] = EVAPORATE_RATE_1
             elif label_map_data[i, j] == 2:
-                pheromone_data[i, j] = pheromone_data[
-                    i, j
-                ] * EVAPORATE_RATE_2 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_2)
-                if pheromone_data[i, j] < 1e-5:
-                    pheromone_data[i, j] = EVAPORATE_RATE_2
+                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_2 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_2)
+                # if pheromone_data[i, j] < 1e-5:
+                #     pheromone_data[i, j] = EVAPORATE_RATE_2
             elif label_map_data[i, j] == 3:
-                pheromone_data[i, j] = pheromone_data[
-                    i, j
-                ] * EVAPORATE_RATE_3 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_3)
-                if pheromone_data[i, j] < 1e-5:
-                    pheromone_data[i, j] = EVAPORATE_RATE_3
+                pheromone_data[i, j] = pheromone_data[i, j] * EVAPORATE_RATE_3 + delta_pheromone[i, j] * (1 - EVAPORATE_RATE_3)
+                # if pheromone_data[i, j] < 1e-5:
+                #     pheromone_data[i, j] = EVAPORATE_RATE_3
+            if(pheromone_data[i, j] < 1e-5):
+                pheromone_data[i, j] = 1
 
 
 # print(label_map_data)
@@ -240,15 +242,15 @@ class Ant:
         for city in self.path:
             if label_map_data[city[0]][city[1]] == 1:
                 delta_pheromone[city[0]][city[1]] += (
-                    Q / self.totol_distance * (1 - EVAPORATE_RATE_1)
+                    Q / self.totol_distance 
                 )
             elif label_map_data[city[0]][city[1]] == 2:
                 delta_pheromone[num_rows - 1][num_cols - 1] += (
-                    Q / self.totol_distance * (1 - EVAPORATE_RATE_2)
+                    Q / self.totol_distance 
                 )
             elif label_map_data[city[0]][city[1]] == 3:
                 delta_pheromone[num_rows - 1][num_cols - 1] += (
-                    Q / self.totol_distance * (1 - EVAPORATE_RATE_3)
+                    Q / self.totol_distance
                 )
 
 
@@ -291,7 +293,7 @@ def draw_variable():
     BETA_B = fontbar.render(f"{BETA:.1f}", True, font_color)
 
     stop_generation_text = fontbar.render(f"stop", True, font_color)
-    stop_generation_value = fontbar.render(f"{stop_generation:.1f}", True, font_color)
+    stop_generation_value = fontbar.render(f"{stop_generation}", True, font_color)
 
     screen.blit(grass_E_text,(1065, 400))
     screen.blit(grass_E,(1080, 450))
@@ -518,10 +520,10 @@ while running:
                 if game_started == False:
                     if check_button_click(x, y) == 2:
                         generation = 0
-                        #pheromone_data = np.ones((num_rows, num_cols))
+                        pheromone_data = np.ones((num_rows, num_cols))
                         #distance_data = np.full((num_rows, num_cols, 8), -1, dtype=float)
-                        #best_value = 0
-                        #best_solution = []
+                        best_value = sys.maxsize
+                        best_solution = []
                     elif check_button_click(x, y) == 11:
                         EVAPORATE_RATE_1 += 0.1
                     elif check_button_click(x, y) == 21:
@@ -543,9 +545,9 @@ while running:
                     elif check_button_click(x, y) == 25:
                         BETA -= 1
                     elif check_button_click(x, y) == 16:
-                        stop_generation += 1
+                        stop_generation += 500
                     elif check_button_click(x, y) == 26:
-                        stop_generation -= 1
+                        stop_generation -= 500
                     initialize()
 
         # 更新遊戲
@@ -562,7 +564,7 @@ while running:
                     best_value = ant.totol_distance
                     best_solution = ant.path
             update_pheromone(pheromone_data, delta_pheromone)
-            print(f"Best value: {best_value}")
+            
             # 畫面顯示
             log_pheromone_data = np.log(pheromone_data)
             min_pheromone = np.min(log_pheromone_data)
@@ -615,7 +617,7 @@ while running:
                             # 創建帶有 alpha 通道的 Surface
                             circle_surface = pygame.Surface((2 * circle_size, 2 * circle_size), pygame.SRCALPHA)
                             pygame.draw.circle(circle_surface, color, (circle_size, circle_size), circle_size)
-
+                
                             # 將帶有 alpha 通道的 Surface 貼到畫面上
                             screen.blit(circle_surface, (j * grid_size, i * grid_size))
 
@@ -628,7 +630,8 @@ while running:
             draw_best_path_count()
             pygame.display.update()
         else:
-            game_started = not game_started
-
+            # game_started = not game_started
+            running = False # 這個是方便跑實驗用的
+print(best_value)
 # 關閉 Pygame
 pygame.quit()
