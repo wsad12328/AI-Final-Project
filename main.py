@@ -3,7 +3,7 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import random
 import perlin_noise
-import numpy as np
+import numpy as np  
 from itertools import accumulate
 import sys
 
@@ -12,22 +12,32 @@ FPS_RUN = 10
 FPS_STOP = 60
 
 generation = 0
-game_started = True # 這個是方便跑實驗用的
+# game_started = True # 這個是方便跑實驗用的
+game_started = False
 # game_started = False 
-stop_generation = 750
+stop_generation = 0
 
 # 螞蟻的參數
 # MAX_ITER = 5
 Q = 100
 weighted_dict = {1: 1, 2: 3, 3: 5}
 # 1號 草地 2號 泥土 3號 沙子
-EVAPORATE_RATE_1 = float(sys.argv[1])
-EVAPORATE_RATE_2 = float(sys.argv[2])
-EVAPORATE_RATE_3 = float(sys.argv[3])
+# EVAPORATE_RATE_1 = float(sys.argv[1])
+# EVAPORATE_RATE_2 = float(sys.argv[2])
+# EVAPORATE_RATE_3 = float(sys.argv[3])
 
-ALPHA = int(sys.argv[4])  # mode 1(4, 2) # mode 2(3, 3) # mode 2(2, 4) alpha + beta = 6
-BETA = int(sys.argv[5])  # (1, 5) (2, 4) (3, 3) (4, 2) (5, 1)
-seed = int(sys.argv[6])
+# ALPHA = int(sys.argv[4])  # mode 1(4, 2) # mode 2(3, 3) # mode 2(2, 4) alpha + beta = 6
+# BETA = int(sys.argv[5])  # (1, 5) (2, 4) (3, 3) (4, 2) (5, 1)
+# seed = int(sys.argv[6])
+
+
+EVAPORATE_RATE_1 = 0.6
+EVAPORATE_RATE_2 = 0.6
+EVAPORATE_RATE_3 = 0.6
+
+ALPHA = 3  # mode 1(4, 2) # mode 2(3, 3) # mode 2(2, 4) alpha + beta = 6
+BETA = 3  # (1, 5) (2, 4) (3, 3) (4, 2) (5, 1)
+seed = 1000
 # print(f"seed: {seed}")
 # print(seed)
 NUMBER_OF_ANT = 200
@@ -492,8 +502,10 @@ def initialize():
     draw_best_path_count()
     pygame.display.update()
 
+# map_data = np.random.rand(num_rows,num_cols)
 initialize()
 # 主迴圈
+
 running = True
 while running:
     if game_started:
@@ -546,9 +558,9 @@ while running:
                     elif check_button_click(x, y) == 25:
                         BETA -= 1
                     elif check_button_click(x, y) == 16:
-                        stop_generation += 500
+                        stop_generation += 50
                     elif check_button_click(x, y) == 26:
-                        stop_generation -= 500
+                        stop_generation -= 50
                     initialize()
 
         # 更新遊戲
@@ -631,8 +643,8 @@ while running:
             draw_best_path_count()
             pygame.display.update()
         else:
-            # game_started = not game_started
-            running = False # 這個是方便跑實驗用的
+            game_started = not game_started
+            # running = False # 這個是方便跑實驗用的
 print(best_value)
 # 關閉 Pygame
 pygame.quit()

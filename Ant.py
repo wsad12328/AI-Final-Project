@@ -1,44 +1,59 @@
 import pygame
-import sys
+import numpy as np
 
+# Set the random seed
+np.random.seed(42)
+
+# Define the map size
+num_rows = 40
+num_cols = 40
+
+# Generate a 40x40 array with values 1, 2, or 3
+map_data = np.random.randint(1, 4, size=(num_rows, num_cols))
+
+# Initialize Pygame
 pygame.init()
 
-# 设置窗口大小
-width, height = 400, 300
-screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Three Circles with Different Transparency")
+# Set the window size and display the window
+win_size = (1000, 1000)
+win = pygame.display.set_mode(win_size)
+pygame.display.set_caption("Random Map")
 
-# 定义颜色
-white = (255, 255, 255)
-red = (255, 0, 0)
+# Define different colors for each value
+tile_colors = {
+    1: (0, 255, 0),    # Green for grass
+    2: (139, 69, 19),   # Brown for soil
+    3: (255, 255, 0)    # Yellow for sand
+}
 
-# 定义圆心和半径
-center_x, center_y = width // 4, height // 2
-radius = 50
+# Set the size of each grid cell
+tile_size = win_size[0] // num_cols, win_size[1] // num_rows
 
-# 定义不同透明度的圆的透明度值列表
-alpha_values = [255, 128, 64]  # 可以根据需要调整透明度值
+grass_image = pygame.image.load("grass.png")
+soil_image = pygame.image.load("soil.png")
+sand_image = pygame.image.load("sand.png")
+print()
+# Main loop
+# running = True
+# while running:
+#     for event in pygame.event.get():
+#         if event.type == pygame.QUIT:
+#             running = False
 
-# 在循环中绘制不同透明度的圆
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+#     # Draw the map
+#     for i in range(num_rows):
+#         for j in range(num_cols):
+#             if map_data[i, j] == 1:
+#                 win.blit(grass_image, (j * tile_size, i * tile_size))
+#                 # pygame.draw.rect(win, tile_colors[map_data[i, j]], (j * tile_size[0], i * tile_size[1], tile_size[0], tile_size[1]))
+#             elif map_data[i, j] == 2:
+#                 win.blit(soil_image, (j * tile_size, i * tile_size))
+#                 # pygame.draw.rect(win, tile_colors[map_data[i, j]], (j * tile_size[0], i * tile_size[1], tile_size[0], tile_size[1]))
+#             elif map_data[i, j] == 3:
+#                 win.blit(sand_image, (j * tile_size, i * tile_size))  
+#                 # pygame.draw.rect(win, tile_colors[map_data[i, j]], (j * tile_size[0], i * tile_size[1], tile_size[0], tile_size[1]))
 
-    # 清屏
-    screen.fill(white)
+#     pygame.display.flip()
 
-    # 绘制不同透明度的三个圆
-    center_x = width // 4  # 重置圆心的X坐标
-    for alpha_value in alpha_values:
-        transparent_red = (red[0], red[1], red[2], alpha_value)
-        pygame.draw.circle(screen, transparent_red, (center_x, center_y), radius)
-        center_x += width // 4  # 将下一个圆的圆心位置调整一下，以便能够看到不同圆之间的差异
-
-    # 刷新屏幕
-    pygame.display.flip()
-
-# 退出程序
-pygame.quit()
-sys.exit()
+# # Close Pygame
+# pygame.quit()
